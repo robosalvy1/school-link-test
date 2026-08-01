@@ -1,8 +1,8 @@
 # School Link
 
-School Link is a private school-community client foundation with no AI integration in version one.
+School Link is a private school-community client foundation.
 
-This Milo contribution provides a locally runnable, tested vertical slice for:
+It provides a locally runnable, tested foundation for:
 
 - authenticated-session policy primitives for channels and direct messages
 - safe chat-media validation (JPEG, PNG, WebP; maximum 5 MB)
@@ -10,6 +10,12 @@ This Milo contribution provides a locally runnable, tested vertical slice for:
 - approved-product inventory holds and a basket flow
 - consent and membership checks for WebRTC-style call-room signaling
 - a responsive, keyboard-accessible student workspace with messaging, pickup-basket, media-validation, and consent-first call flows
+
+## Hosting architecture
+
+The React client is intended for a separate static host. The Linux host runs the API and PostgreSQL from [`server/`](server/README.md). Configure the public client with `VITE_API_BASE_URL=https://api.example.edu/api/v1`; only this API URL is allowed in a Vite environment variable because all `VITE_*` values are public in the browser bundle.
+
+The API uses an exact CORS allowlist, responds to `/api/v1/health`, and deliberately returns `401` from `/api/v1/session` until a real school identity provider is integrated. This keeps the user workspace closed rather than showing fixture data or granting access from client-side role checks.
 
 ## Run locally
 
@@ -23,7 +29,10 @@ Then open the local URL printed by Vite. Run checks with:
 ```bash
 npm test
 npm run build
+npm run server:test
 ```
+
+For the separate static host, configure a single-page-app fallback to `index.html`, cache fingerprinted assets aggressively while keeping `index.html` revalidatable, and set `VITE_API_BASE_URL` only at build time. Configure that host's CSP with a narrowly scoped `connect-src` for the exact Linux API origin; do not put session, database, payment, or storage credentials in frontend variables.
 
 ## Production deployment boundary
 
