@@ -1,6 +1,6 @@
-# School Link Test
+# School Link
 
-School Link Test is a private school-community foundation with no AI integration in version one.
+School Link is a private school-community client foundation with no AI integration in version one.
 
 This Milo contribution provides a locally runnable, tested vertical slice for:
 
@@ -9,7 +9,7 @@ This Milo contribution provides a locally runnable, tested vertical slice for:
 - report-based moderation and a least-privilege Bob moderation role
 - approved-product inventory holds and a basket flow
 - consent and membership checks for WebRTC-style call-room signaling
-- a responsive product dashboard that makes these boundaries visible
+- a responsive, keyboard-accessible student workspace with messaging, pickup-basket, media-validation, and consent-first call flows
 
 ## Run locally
 
@@ -25,9 +25,9 @@ npm test
 npm run build
 ```
 
-## Version-one implementation boundary
+## Production deployment boundary
 
-The current repository starts as a front-end demonstration plus domain-policy layer. Production rollout still requires a server-side session provider, durable database, signed object storage with malware scanning, payment provider, a real WebRTC signaling service, rate limiting, and staff-reviewed school policy configuration.
+This repository is a production-quality client and domain-policy foundation, not a complete hosted school platform. A real deployment still requires a server-side session provider, durable database, signed object storage with malware scanning, payment provider, WebRTC signaling service, rate limiting, observability, accessibility review with real users, and staff-reviewed school policy configuration. Client-side state is deliberately not represented as a durable transaction or message delivery.
 
 Bob can review reports, alerts, and submitted media. Bob is deliberately not permitted to silently browse private DMs or evade channel membership checks. All production moderation actions should be audit logged.
 
