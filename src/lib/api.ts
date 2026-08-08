@@ -106,6 +106,21 @@ export class SchoolLinkApi {
   signUp(name: string, email: string, password: string) {
     return this.authenticate("/auth/signup", { name, email, password });
   }
+
+  async signOut() {
+    let response: Response;
+    try {
+      response = await fetch(`${this.base}/auth/signout`, {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+    } catch {
+      throw new ApiError("School Link could not reach the account server.");
+    }
+
+    if (!response.ok && response.status !== 401) throw new ApiError("School Link could not sign you out. Please try again.", response.status);
+  }
 }
 
 export const schoolLinkApi = new SchoolLinkApi();
