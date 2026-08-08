@@ -77,6 +77,35 @@ export class SchoolLinkApi {
       throw new ApiError("The school server returned an invalid session response.");
     }
   }
+
+  private async authenticate(path: "/auth/signin" | "/auth/signup", payload: { email: string; password: string; name?: string }): Promise<Session> {
+    let response: Response;
+    try {
+      response = await fetch(`${this.base}${path}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      throw new ApiError("School Link could not reach the account server.");
+    }
+    if (response.status === 409) throw new ApiError("That email is already registered.", response.status);
+    if (response.status === 401) throw new ApiError("Email or password is incorrect.", response.status);
+    if (response.status === 429) throw new ApiError("Please wait before trying again.", response.status);
+    if (!response.ok) throw new ApiError("Check your details and try again.", response.status);
+    const session = asSession(await response.json());
+    if (!session) throw new ApiError("The account server returned an invalid response.");
+    return session;
+  }
+
+  signIn(email: string, password: string) {
+    return this.authenticate("/auth/signin", { email, password });
+  }
+
+  signUp(name: string, email: string, password: string) {
+    return this.authenticate("/auth/signup", { name, email, password });
+  }
 }
 
 export const schoolLinkApi = new SchoolLinkApi();

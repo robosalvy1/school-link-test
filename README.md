@@ -15,7 +15,7 @@ It provides a locally runnable, tested foundation for:
 
 The React client is intended for a separate static host. The Linux host runs the API and PostgreSQL from [`server/`](server/README.md). Configure the public client with `VITE_API_BASE_URL=https://api.example.edu/api/v1`; only this API URL is allowed in a Vite environment variable because all `VITE_*` values are public in the browser bundle.
 
-The API uses an exact CORS allowlist, responds to `/api/v1/health`, and deliberately returns `401` from `/api/v1/session` until a real school identity provider is integrated. This keeps the user workspace closed rather than showing fixture data or granting access from client-side role checks.
+The API uses an exact CORS allowlist and supports personal-email sign-up/sign-in without a school-domain restriction. Passwords are hashed on the server and sessions are opaque HttpOnly cookies; client-side role checks never grant access. Email verification, account recovery, and MFA are required before a public launch.
 
 ## Run locally
 

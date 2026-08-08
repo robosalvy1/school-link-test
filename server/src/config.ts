@@ -6,6 +6,8 @@ export type Config = Readonly<{
   sessionCookieName: string;
   rateLimitWindowMs: number;
   rateLimitMaxRequests: number;
+  authRateLimitMaxRequests: number;
+  sessionTtlHours: number;
   trustProxy: boolean;
 }>;
 
@@ -39,6 +41,8 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     sessionCookieName: env.SESSION_COOKIE_NAME?.trim() || "school_link_session",
     rateLimitWindowMs: positiveInteger("RATE_LIMIT_WINDOW_MS", env.RATE_LIMIT_WINDOW_MS ?? "60000"),
     rateLimitMaxRequests: positiveInteger("RATE_LIMIT_MAX_REQUESTS", env.RATE_LIMIT_MAX_REQUESTS ?? "120"),
+    authRateLimitMaxRequests: positiveInteger("AUTH_RATE_LIMIT_MAX_REQUESTS", env.AUTH_RATE_LIMIT_MAX_REQUESTS ?? "10"),
+    sessionTtlHours: positiveInteger("SESSION_TTL_HOURS", env.SESSION_TTL_HOURS ?? "168"),
     trustProxy: env.TRUST_PROXY === "1",
   });
 };

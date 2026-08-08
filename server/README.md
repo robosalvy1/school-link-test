@@ -5,8 +5,9 @@ This directory deploys the API and PostgreSQL on a Linux host. The React fronten
 ## What is implemented
 
 - HTTPS reverse proxy, non-root read-only API container, private PostgreSQL container, durable database volume, and health checks.
-- Fail-fast configuration validation, explicit CORS allowlist, request IDs, no-store API responses, and process-local rate limiting.
-- `/api/v1/health` (liveness), `/api/v1/ready` (database readiness), and a deliberately fail-closed `/api/v1/session` route.
+- Fail-fast configuration validation, explicit CORS allowlist, request IDs, no-store API responses, rate limits, and POST origin checks.
+- Email/password sign-up and sign-in with no school-domain restriction. Passwords are salted and hashed with scrypt; sessions are opaque, hashed in PostgreSQL, expire after a configured TTL, and use HttpOnly cookies.
+- `/api/v1/health` (liveness), `/api/v1/ready` (database readiness), and `/api/v1/session` for the current authenticated user.
 - Idempotent migrations for users, channels, channel membership, messages, products, orders, order items, and audit logging.
 
 ## Deploy
@@ -20,7 +21,7 @@ The database is intentionally not published to the host network. Firewall the Li
 
 ## Deliberate boundaries before launch
 
-This is not yet a student-data production service. Authentication always fails closed: integrate a vetted identity provider, verify signed tokens server-side, provision users from trusted school records, and add role/tenant authorization to every data route. There are no CRUD data routes, uploads or malware scanning, payments, WebRTC/TURN, email/SMS, retention/deletion workflows, backups, observability, incident response, or FERPA/COPPA/security review in this foundation. Do not put live student data into this system until those controls, threat modeling, and an independent security review are complete.
+This is not yet a student-data production service. Local email/password accounts do not include email verification, password reset, breach-password screening, MFA, account recovery, or an identity-provider integration. Add those controls, role/tenant authorization to every data route, uploads and malware scanning, payments, WebRTC/TURN, retention/deletion workflows, backups, observability, incident response, and FERPA/COPPA/security review before accepting real student data.
 
 ## Development checks
 

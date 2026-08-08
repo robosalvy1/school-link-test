@@ -34,10 +34,13 @@ export const applyCors = (request: IncomingMessage, response: ServerResponse, co
   response.setHeader("Access-Control-Allow-Origin", origin);
   response.setHeader("Vary", "Origin");
   response.setHeader("Access-Control-Allow-Credentials", "true");
-  response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Request-Id");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Request-Id, X-CSRF-Token");
   response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   return true;
 };
+
+export const hasTrustedOrigin = (request: IncomingMessage, config: Config): boolean =>
+  typeof request.headers.origin === "string" && config.corsOrigins.has(request.headers.origin);
 
 export const sendJson = (response: ServerResponse, status: number, body: unknown): void => {
   response.statusCode = status;
