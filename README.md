@@ -43,3 +43,7 @@ Bob can review reports, alerts, and submitted media. Bob is deliberately not per
 ## Repository access
 
 The repository is private. The requested ownership model is HermesNA-1 as owner, with robosalvy1 and N1rbhik as admins. GitHub repository ownership must be transferred by the current owner or hosted in an organization; this code contribution does not grant a back-door owner role.
+
+## Moderation and security boundary
+
+Bob is a moderator/security role, not an AI assistant. The role receives reports, suspicious-activity alerts, upload-review items, and audit summaries through protected, audited workflows. It must not silently bypass access controls or expose private content. Security-event summaries deliberately minimize sensitive detail; for example, failed-login bursts expose attempt counts rather than submitted content.

@@ -1,12 +1,12 @@
 {
-  "name": "school-link",
+  "name": "school-link-test",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "vitest run",
+    "test": "vitest run && node --test test/moderation-security.test.js",
     "test:watch": "vitest",
     "server:build": "npm --prefix server run build",
     "server:test": "npm --prefix server test",
