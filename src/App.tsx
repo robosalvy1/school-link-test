@@ -2,10 +2,9 @@ import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { ApiError, schoolLinkApi, type Session } from "./lib/api";
 
 type WorkspaceState =
-  | { kind: "loading" }
+  | { kind: "landing" }
   | { kind: "signed-out" }
   | { kind: "ready"; session: Session }
-  | { kind: "error"; message: string };
 
 type PageKey = "home" | "messages" | "schedule" | "store" | "study-room" | "settings";
 
@@ -32,33 +31,31 @@ function pageFromHash(): PageKey {
 }
 
 export default function App() {
-  const [workspace, setWorkspace] = useState<WorkspaceState>({ kind: "loading" });
+  const [workspace, setWorkspace] = useState<WorkspaceState>({ kind: "landing" });
 
-  function loadWorkspace() {
-    const controller = new AbortController();
-    setWorkspace({ kind: "loading" });
-    Promise.all([schoolLinkApi.getHealth(controller.signal), schoolLinkApi.getSession(controller.signal)])
-      .then(([, session]) => setWorkspace(session ? { kind: "ready", session } : { kind: "signed-out" }))
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setWorkspace({ kind: "error", message: messageFor(error) });
-      });
-    return () => controller.abort();
-  }
-
-  useEffect(() => loadWorkspace(), []);
-
-  if (workspace.kind === "loading") return <AccessFrame title="Opening your private workspace" detail="Checking your secure connection." />;
-  if (workspace.kind === "error") return <AccessFrame title="Your workspace is unavailable" detail={workspace.message} action={<button className="primary-button" type="button" onClick={loadWorkspace}>Try again</button>} />;
-  if (workspace.kind === "signed-out") return <AuthScreen onAuthenticated={(session) => setWorkspace({ kind: "ready", session })} />;
-  return <Workspace session={workspace.session} onSignedOut={() => setWorkspace({ kind: "signed-out" })} />;
+  if (workspace.kind === "landing") return <LandingPage onOpenWorkspace={() => setWorkspace({ kind: "signed-out" })} />;
+  if (workspace.kind === "signed-out") return <AuthScreen onAuthenticated={(session) => setWorkspace({ kind: "ready", session })} onBack={() => setWorkspace({ kind: "landing" })} />;
+  return <Workspace session={workspace.session} onSignedOut={() => setWorkspace({ kind: "landing" })} />;
 }
 
 function AccessFrame({ title, detail, action }: { title: string; detail: string; action?: ReactNode }) {
   return <main className="app-shell"><a className="skip-link" href="#access">Skip to account status</a><nav className="topbar" aria-label="Primary navigation"><a className="brand" href="#access">School<span>Link</span></a></nav><section className="workspace-wrap auth-wrap" id="access"><article className="focus-card auth-card"><div><p className="kicker">Private workspace</p><h1>{title}</h1><p>{detail}</p></div><div className="focus-card-foot">{action ?? <span>Please wait.</span>}<span>School Link</span></div></article></section><footer><span>School Link</span><span>Private by design</span></footer></main>;
 }
 
-function AuthScreen({ onAuthenticated }: { onAuthenticated: (session: Session) => void }) {
+function LandingPage({ onOpenWorkspace }: { onOpenWorkspace: () => void }) {
+  return <main className="landing-shell">
+    <a className="skip-link" href="#main-content">Skip to main content</a>
+    <nav className="landing-nav" aria-label="Landing navigation"><a className="brand" href="#top">School<span>Link</span></a><div><a href="#how-it-works">How it works</a><a href="#independent">Our approach</a><button className="nav-signin" type="button" onClick={onOpenWorkspace}>Sign in</button></div></nav>
+    <section className="landing-hero" id="top" aria-labelledby="landing-title"><div className="hero-copy"><p className="kicker">A calmer way to stay connected</p><h1 id="landing-title">Your day, <em>connected.</em></h1><p>One calm, private place for the conversations, plans, study rooms, and pickups that move your day forward.</p><div className="hero-actions"><button className="landing-primary" type="button" onClick={onOpenWorkspace}>Open your workspace</button><a className="landing-secondary" href="#how-it-works">See how it works</a></div></div><div className="hero-scene" aria-label="A preview of the School Link student workspace"><div className="scene-top"><span>School<span>Link</span></span><i>Connected securely</i></div><div className="scene-body"><div className="scene-rail"><b>Home</b><span>Messages</span><span>Schedule</span><span>Store</span></div><div className="scene-content"><small>Your workspace</small><strong>Everything you need,<br /><em>in one place.</em></strong><div className="scene-cards"><div><small>UP NEXT</small><b>Study hall<br />3:15 PM</b></div><div><small>MESSAGES</small><b>2 new updates</b></div></div></div></div></div></section>
+    <section className="landing-intro" id="how-it-works"><p>School Link gives students a single, uncluttered place to stay in touch, make plans, and take the next step with confidence.</p></section>
+    <section className="feature-bento" aria-label="School Link features"><article className="feature-panel feature-panel-dark"><p className="kicker">Stay in the loop</p><h2>Every update that matters, without the noise.</h2><p>Keep conversations, channels, and activity in a workspace made to be easy to return to.</p><span className="panel-mark">01</span></article><article className="feature-panel feature-panel-sand"><p className="kicker">Plan your day</p><h2>See what’s next.</h2><p>Keep plans, events, and reminders together in one quiet place.</p><div className="mini-calendar"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span></div></article><article className="feature-panel feature-panel-mint"><p className="kicker">Move with purpose</p><h2>From study rooms to pickup.</h2><p>Join rooms only when you choose. Keep orders and pickup details clear.</p><a href="#independent">Made for everyday student life</a></article></section>
+    <section className="landing-proof" id="independent"><div><p className="kicker">Independent by design</p><h2>Private by design. Straightforward by default.</h2></div><div className="proof-list"><article><b>Built around your circles</b><p>Choose the conversations and spaces that make sense for you.</p></article><article><b>Permission when it matters</b><p>Camera and microphone access is requested only after you choose to join a room.</p></article><article><b>Clear next steps</b><p>Plans, orders, and messages stay focused on what you need to do now.</p></article><article><b>Made by students at Gavlin</b><p>School Link is made independently by students at Gavlin. Its creators remain anonymous.</p></article></div></section>
+    <section className="landing-cta"><p className="kicker">Your community, in reach</p><h2>Ready when your day is.</h2><button className="landing-primary" type="button" onClick={onOpenWorkspace}>Sign in to School Link</button></section>
+    <footer className="landing-footer"><a className="brand" href="#top">School<span>Link</span></a><span>Private by design</span><span>Made independently by anonymous Gavlin students</span></footer>
+  </main>;
+}
+
+function AuthScreen({ onAuthenticated, onBack }: { onAuthenticated: (session: Session) => void; onBack: () => void }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -81,7 +78,7 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (session: Session) =
   }
 
   const signingUp = mode === "signup";
-  return <main className="app-shell"><a className="skip-link" href="#access">Skip to account form</a><nav className="topbar" aria-label="Primary navigation"><a className="brand" href="#access">School<span>Link</span></a></nav><section className="workspace-wrap auth-wrap" id="access"><article className="focus-card auth-card"><div><p className="kicker">Your account</p><h1>{signingUp ? "Create your account." : "Welcome back."}</h1><p>{signingUp ? "Use any email address you control. A school email is not required." : "Sign in with the email and password you chose."}</p></div><form className="auth-form" onSubmit={submit}>{signingUp && <label>Display name<input required minLength={2} maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" /></label>}<label>Email address<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" /></label><label>Password<input required type="password" minLength={12} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={signingUp ? "new-password" : "current-password"} /><small>At least 12 characters.</small></label>{status && <p className="auth-error" role="alert">{status}</p>}<button className="primary-button" type="submit" disabled={busy}>{busy ? "Working…" : signingUp ? "Create account" : "Sign in"}</button></form><div className="focus-card-foot"><button className="text-action inverse" type="button" onClick={() => { setMode(signingUp ? "signin" : "signup"); setStatus(""); }}>{signingUp ? "Already have an account? Sign in" : "New here? Create an account"}</button><span>School Link</span></div></article></section><footer><span>No school email required</span><span>Private by design</span></footer></main>;
+  return <main className="app-shell"><a className="skip-link" href="#access">Skip to account form</a><nav className="topbar" aria-label="Primary navigation"><button className="brand brand-button" type="button" onClick={onBack}>School<span>Link</span></button></nav><section className="workspace-wrap auth-wrap" id="access"><article className="focus-card auth-card"><div><p className="kicker">Your account</p><h1>{signingUp ? "Create your account." : "Welcome back."}</h1><p>{signingUp ? "Use any email address you control. A school email is not required." : "Sign in with the email and password you chose."}</p></div><form className="auth-form" onSubmit={submit}>{signingUp && <label>Display name<input required minLength={2} maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" /></label>}<label>Email address<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" /></label><label>Password<input required type="password" minLength={12} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={signingUp ? "new-password" : "current-password"} /><small>At least 12 characters.</small></label>{status && <p className="auth-error" role="alert">{status}</p>}<button className="primary-button" type="submit" disabled={busy}>{busy ? "Working…" : signingUp ? "Create account" : "Sign in"}</button></form><div className="focus-card-foot"><button className="text-action inverse" type="button" onClick={() => { setMode(signingUp ? "signin" : "signup"); setStatus(""); }}>{signingUp ? "Already have an account? Sign in" : "New here? Create an account"}</button><span>School Link</span></div></article></section><footer><span>No school email required</span><span>Private by design</span></footer></main>;
 }
 
 function Workspace({ session, onSignedOut }: { session: Session; onSignedOut: () => void }) {
